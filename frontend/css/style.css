@@ -1,41 +1,6 @@
 /* Website Cards */
-.card {
-  background: #08306B;
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  padding: 25px;
-  width: 250px;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
 
-.card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-}
 
-.card h3, .card p {
-  color: #FFFED0;
-}
-
-/* Buttons */
-.btn {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: bold;
-  background-color: #FFFED0;
-  color: #490307;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.btn:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
-}
 
 /* Toggle Switch */
 .toggle-container {
@@ -90,4 +55,52 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+
+
+
+
+
+
+
+/* Dark Mode Base */
+.dark-mode {
+  background-color: #121212 !important;
+  color: #fcfafa !important;
+}
+
+/* Cards */
+.dark-mode .card {
+  background: rgba(69, 68, 68, 0.95) !important;
+  color: #fdfbfb !important;
+  border: 1px solid #333 !important;
+}
+
+/* Headings */
+.dark-mode h1 {
+  color:rgb(133, 132, 132) !important;
+}
+
+.dark-mode h3 {
+  color: #a10a60 !important;
+}
+
+/* Paragraphs */
+.dark-mode p {
+  color: #a10a60 !important;
+}
+
+/* Buttons */
+.dark-mode button {
+  background-color: #333 !important;
+  color: #FFFED0 !important;
+  border: 1px solid #555 !important;
+}
+
+
+.dark-mode {
+  background: linear-gradient(rgba(18,18,18,0.8), rgba(18,18,18,0.8)),
+              url("/public/img/bg.jpg") no-repeat top center !important;
+  background-size: cover !important;
 }
