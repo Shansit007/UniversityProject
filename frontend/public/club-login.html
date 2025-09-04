@@ -33,11 +33,34 @@
   </div>
 
   <script>
-    document.getElementById('clubLoginForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      console.log('Club login attempt:', document.getElementById('clubIdentifier').value.trim());
-      alert('Demo login — backend integration pending.');
+document.getElementById('clubLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const data = {
+    email: document.getElementById('clubEmail').value.trim(),
+    password: document.getElementById('clubPassword').value
+  };
+
+  try {
+    const res = await fetch('http://localhost:5000/api/club/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
+
+    const result = await res.json();
+    if (res.ok) {
+      alert('Login successful');
+      localStorage.setItem('club', JSON.stringify(result.club));
+      window.location.href = '/club-dashboard.html';
+    } else {
+      alert(result.msg);
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+});
+
   </script>
 </body>
 </html>

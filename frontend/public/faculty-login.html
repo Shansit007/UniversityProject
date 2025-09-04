@@ -39,15 +39,34 @@
     </div>
   </div>
 
-  <script>
-    // placeholder handler — will connect to backend later
-    document.getElementById('facultyLoginForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const id = document.getElementById('facultyIdentifier').value.trim();
-      console.log('Faculty login attempt:', id);
-      // TODO: call POST /api/faculty/login from JS when backend ready
-      alert('This is a demo login form. Backend not hooked yet.');
-    });
-  </script>
+<script>
+  document.getElementById('facultyLoginForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const facultyID = document.getElementById('facultyIdentifier').value.trim();
+    const password = document.getElementById('facultyPassword').value;
+
+    try {
+      const res = await fetch('http://localhost:5000/api/faculty/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ facultyID, password })
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('Login successful!');
+        console.log('Faculty:', result.faculty);
+        // you can store token in localStorage here later
+      } else {
+        alert(result.msg || 'Login failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Server error');
+    }
+  });
+</script>
+
 </body>
 </html>

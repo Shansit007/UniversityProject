@@ -1,59 +1,160 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body{font-family:"Quicksand",Arial;margin:0;background:#fafafa;min-height:100vh}
-    .wrap{max-width:1100px;margin:2rem auto;padding:1rem}
-    h1{margin-bottom:1rem}
-    table{width:100%; border-collapse:collapse}
-    th,td{padding:.7rem;border-bottom:1px solid #eee;text-align:left}
-    .approve{background:#2ecc71;color:#fff;border:none;padding:.4rem .6rem;border-radius:8px;cursor:pointer}
-    .reject{background:#e74c3c;color:#fff;border:none;padding:.4rem .6rem;border-radius:8px;cursor:pointer}
-    .type{font-weight:700;color:#490307}
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="wrap">
-    <h1>Admin Dashboard — Pending Approvals</h1>
-    <p>Approve or reject new faculty / club registration requests.</p>
+<body class="bg-gray-100 font-sans">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Admin Dashboard</h1>
 
-    <table aria-label="pending approvals">
-      <thead>
-        <tr><th>Type</th><th>Name / Club</th><th>Contact</th><th>Submitted</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="pendingBody">
-        <!-- sample row -->
-        <tr data-id="req1">
-          <td class="type">Faculty</td>
-          <td>Dr. A Sharma (FAC123)</td>
-          <td>98765 43210 / a.sharma@uni.edu</td>
-          <td>2025-09-02 21:00</td>
-          <td>
-            <button class="approve" data-id="req1" data-type="faculty">Approve</button>
-            <button class="reject" data-id="req1" data-type="faculty">Reject</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Pending Clubs -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-4">Pending Clubs</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg shadow">
+          <thead class="bg-gray-800 text-white rounded-t-lg">
+            <tr>
+              <th class="py-2 px-4 text-left">Club Name</th>
+              <th class="py-2 px-4 text-left">Email</th>
+              <th class="py-2 px-4 text-left">President</th>
+              <th class="py-2 px-4 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody id="clubsTable" class="divide-y divide-gray-200">
+            <tr><td colspan="4" class="text-center py-4">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pending Faculty -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Pending Faculty</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg shadow">
+          <thead class="bg-gray-800 text-white rounded-t-lg">
+            <tr>
+              <th class="py-2 px-4 text-left">Name</th>
+              <th class="py-2 px-4 text-left">Email</th>
+              <th class="py-2 px-4 text-left">Faculty ID</th>
+              <th class="py-2 px-4 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody id="facultyTable" class="divide-y divide-gray-200">
+            <tr><td colspan="4" class="text-center py-4">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
   <script>
-    // demo handlers - in real app these call /api/admin/approve or /api/admin/reject
-    document.getElementById('pendingBody').addEventListener('click', function(e){
-      const btn = e.target;
-      if(btn.matches('.approve') || btn.matches('.reject')){
-        const id = btn.dataset.id;
-        const type = btn.dataset.type;
-        const action = btn.classList.contains('approve') ? 'approve' : 'reject';
-        console.log('Admin action', action, 'on', type, id);
-        alert(`Admin: ${action.toUpperCase()} ${type} request ${id} (demo).`);
-        // in production: POST /api/admin/approve/:id  or /api/admin/reject/:id
+    const backend = "http://localhost:5000";
+
+    // --- Clubs ---
+    async function fetchPendingClubs() {
+      const res = await fetch(`${backend}/api/club/pending`);
+      const data = await res.json();
+      const tbody = document.getElementById("clubsTable");
+      tbody.innerHTML = "";
+      if (!data || data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center py-4'>No pending clubs</td></tr>";
+        return;
       }
-    });
+      data.forEach(club => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="py-2 px-4">${club.clubName}</td>
+          <td class="py-2 px-4">${club.email}</td>
+          <td class="py-2 px-4">${club.presidentName}</td>
+          <td class="py-2 px-4 flex gap-2">
+            <button onclick="approveClub('${club._id}', this)" class="bg-green-500 text-white rounded px-3 py-1 hover:bg-green-600">Approve</button>
+            <button onclick="rejectClub('${club._id}', this)" class="bg-red-500 text-white rounded px-3 py-1 hover:bg-red-600">Reject</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function approveClub(id, btn) {
+      btn.disabled = true;
+      const res = await fetch(`${backend}/api/club/approve/${id}`, { method: "PUT" });
+      if (res.ok) {
+        alert("Club approved!");
+        fetchPendingClubs();
+      } else {
+        alert("Error approving club");
+        btn.disabled = false;
+      }
+    }
+
+    async function rejectClub(id, btn) {
+      btn.disabled = true;
+      const res = await fetch(`${backend}/api/club/reject/${id}`, { method: "PUT" });
+      if (res.ok) {
+        alert("Club rejected!");
+        fetchPendingClubs();
+      } else {
+        alert("Error rejecting club");
+        btn.disabled = false;
+      }
+    }
+
+    // --- Faculty ---
+    async function fetchPendingFaculty() {
+      const res = await fetch(`${backend}/api/admin/pending`);
+      const data = await res.json();
+      const tbody = document.getElementById("facultyTable");
+      tbody.innerHTML = "";
+      if (!data.pendingFaculty || data.pendingFaculty.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center py-4'>No pending faculty</td></tr>";
+        return;
+      }
+      data.pendingFaculty.forEach(fac => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="py-2 px-4">${fac.name}</td>
+          <td class="py-2 px-4">${fac.email}</td>
+          <td class="py-2 px-4">${fac.facultyID}</td>
+          <td class="py-2 px-4 flex gap-2">
+            <button onclick="approveFaculty('${fac._id}', this)" class="bg-green-500 text-white rounded px-3 py-1 hover:bg-green-600">Approve</button>
+            <button onclick="rejectFaculty('${fac._id}', this)" class="bg-red-500 text-white rounded px-3 py-1 hover:bg-red-600">Reject</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function approveFaculty(id, btn) {
+      btn.disabled = true;
+      const res = await fetch(`${backend}/api/admin/approve/faculty/${id}`, { method: "PUT" });
+      if (res.ok) {
+        alert("Faculty approved!");
+        fetchPendingFaculty();
+      } else {
+        alert("Error approving faculty");
+        btn.disabled = false;
+      }
+    }
+
+    async function rejectFaculty(id, btn) {
+      btn.disabled = true;
+      const res = await fetch(`${backend}/api/admin/reject/faculty/${id}`, { method: "PUT" });
+      if (res.ok) {
+        alert("Faculty rejected!");
+        fetchPendingFaculty();
+      } else {
+        alert("Error rejecting faculty");
+        btn.disabled = false;
+      }
+    }
+
+    // Initial load
+    fetchPendingClubs();
+    fetchPendingFaculty();
   </script>
 </body>
 </html>

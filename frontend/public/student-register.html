@@ -47,22 +47,46 @@
     </div>
   </div>
 
-  <script>
-    // simple front-end placeholder: collects form and prints JSON to console
-    document.getElementById('studentRegisterForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const data = {
-        name: document.getElementById('studentName').value.trim(),
-        mobile: document.getElementById('studentMobile').value.trim(),
-        email: document.getElementById('studentEmail').value.trim(),
-        facultyID: document.getElementById('studentID').value.trim(),
-        password: document.getElementById('studentPasswordReg').value
-      };
-      console.log('Student register data (send to /api/student/register):', data);
-      alert('Registration request captured. (This is a demo — backend integration pending.)');
-      // TODO: fetch POST /api/faculty/register with body = data
-    });
-    document.getElementById('studentClear').addEventListener('click', ()=>document.getElementById('studentRegisterForm').reset());
-  </script>
+<script>
+  document.getElementById('studentRegisterForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const data = {
+      name: document.getElementById('studentName').value.trim(),
+      mobile: document.getElementById('studentMobile').value.trim(),
+      email: document.getElementById('studentEmail').value.trim(),
+      regNo: document.getElementById('studentID').value.trim(),   // ⬅️ match backend field
+      password: document.getElementById('studentPasswordReg').value
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/api/student/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      console.log("Register response:", result);
+
+      if (!res.ok) {
+        alert(result.msg || 'Registration failed');
+        return;
+      }
+
+      alert("Registration successful! Please wait for OTP verification + admin approval.");
+      document.getElementById('studentRegisterForm').reset();
+
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong, please try again!");
+    }
+  });
+
+  document.getElementById('studentClear').addEventListener('click', () =>
+    document.getElementById('studentRegisterForm').reset()
+  );
+</script>
+
 </body>
 </html>

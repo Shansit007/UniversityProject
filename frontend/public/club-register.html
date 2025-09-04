@@ -40,17 +40,29 @@
   </div>
 
   <script>
-    document.getElementById('clubRegisterForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const data = {
-        clubName: document.getElementById('clubName').value.trim(),
-        email: document.getElementById('clubEmail').value.trim(),
-        presidentName: document.getElementById('presidentName').value.trim(),
-        password: document.getElementById('clubPassword').value
-      };
-      console.log('Club register data (send to /api/club/register):', data);
-      alert('Registration captured (demo). Backend hookup pending.');
+    document.getElementById('clubRegisterForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const data = {
+    clubName: document.getElementById('clubName').value.trim(),
+    email: document.getElementById('clubEmail').value.trim(),
+    presidentName: document.getElementById('presidentName').value.trim(),
+    password: document.getElementById('clubPassword').value
+  };
+
+  try {
+    const res = await fetch('http://localhost:5000/api/club/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
+
+    const result = await res.json();
+    alert(result.msg);
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+});
   </script>
 </body>
 </html>
