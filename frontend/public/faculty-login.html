@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Faculty — Login</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:"Quicksand",Arial;margin:0;background:url('/img/bg.jpg') top center/cover no-repeat;min-height:100vh}
+    .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem}
+    .box{background:rgba(255,255,255,0.9); padding:2rem; border-radius:18px; width:420px; box-shadow:0 10px 30px rgba(0,0,0,.12)}
+    h1{margin:0 0 .4rem; font-weight:800}
+    label{display:block; font-weight:600; margin-top:.8rem}
+    input{width:100%; padding:.65rem 0.8rem; margin-top:.35rem; border-radius:10px; border:1px solid #ddd}
+    .note{font-size:.9rem; color:#555; margin-top:.8rem}
+    .row{display:flex; justify-content:space-between; align-items:center; margin-top:1rem}
+    .btn{background:#FFFED0;color:#490307;border:none;padding:.6rem 1rem;border-radius:999px;font-weight:700;cursor:pointer}
+    a.register{color:#490307;font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="box">
+      <h1>Faculty Login</h1>
+      <form id="facultyLoginForm">
+        <label for="facultyIdentifier">Name / Email / FacultyID</label>
+        <input id="facultyIdentifier" name="identifier" placeholder="e.g. FAC123 or your email">
+
+        <label for="facultyPassword">Password</label>
+        <input id="facultyPassword" name="password" type="password" placeholder="Password">
+
+        <div class="row" style="margin-top:1.2rem">
+          <button id="facultyLoginBtn" class="btn" type="submit">Login</button>
+          <a class="register" href="/faculty-register.html">Not registered? Register</a>
+        </div>
+
+        <p class="note">After registration you'll need OTP verification and admin approval before your account is usable.</p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // placeholder handler — will connect to backend later
+    document.getElementById('facultyLoginForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const id = document.getElementById('facultyIdentifier').value.trim();
+      console.log('Faculty login attempt:', id);
+      // TODO: call POST /api/faculty/login from JS when backend ready
+      alert('This is a demo login form. Backend not hooked yet.');
+    });
+  </script>
+</body>
+</html>
