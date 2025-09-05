@@ -1,49 +1,93 @@
 const Student = require('../models/Student');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Register Student
+// ------------------- REGISTER -------------------
 exports.registerStudent = async (req, res) => {
-  const { name, regNo, password } = req.body;
+  const { name, regNo, email, password } = req.body;
   try {
-    // check existing
+    // Check if student already exists
     const existing = await Student.findOne({ regNo });
     if (existing) return res.status(400).json({ msg: 'Student already exists' });
 
-    // hash pw
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPw = await bcrypt.hash(password, salt);
 
-    // save
-    const student = new Student({ name, regNo, password: hashedPw });
+    // Save new student
+    const student = new Student({ name, regNo, email, password: hashedPw });
     await student.save();
 
-    res.json({ msg: 'Student registered successfully. You can now Login.' });
+    res.json({ msg: 'Student registered successfully. You can now login.' });
   } catch (err) {
-    console.error(err);
+    console.error('Register Error:', err);
     res.status(500).send('Server error');
   }
 };
 
-// Login Student
+// ------------------- LOGIN -------------------
 exports.loginStudent = async (req, res) => {
-  const { regNo, password } = req.body;
-
+  const { identifier, password } = req.body; // identifier = name / email / regNo
   try {
-    console.log("req.body:", req.body);   // 🔎 check what’s coming from Postman
+    console.log('Login attempt:', identifier);
 
-    const student = await Student.findOne({ regNo });
-    console.log("Student found:", student);  // 🔎 see if student exists in DB
+    // Find student by regNo, name, or email
+    const student = await Student.findOne({
+      $or: [
+        { regNo: identifier },
+        { name: identifier },
+        { email: identifier }
+      ]
+    });
 
     if (!student) return res.status(400).json({ msg: 'Student not found' });
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, student.password);
-    console.log("Password match result:", isMatch);  // 🔎 true/false
-
     if (!isMatch) return res.status(400).json({ msg: 'Invalid password' });
 
-    res.json({ msg: 'Login successful', student });
+    // Sign JWT
+    const payload = { id: student._id };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Return student info + token
+    res.json({ msg: 'Login successful', student, token });
   } catch (err) {
-    console.error(err);
+    console.error('Login Error:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+// ------------------- ADD FACULTY TO LIBRARY -------------------
+exports.addToLibrary = async (req, res) => {
+  const { facultyId } = req.body;
+  const studentId = req.student.id; // req.student set by JWT middleware
+
+  try {
+    const student = await Student.findById(studentId);
+    if (!student.library) student.library = [];
+
+    if (!student.library.includes(facultyId)) {
+      student.library.push(facultyId);
+      await student.save();
+    }
+
+    res.json({ msg: 'Added to library' });
+  } catch (err) {
+    console.error('Add to Library Error:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+// ------------------- GET STUDENT'S LIBRARY -------------------
+exports.getLibrary = async (req, res) => {
+  const studentId = req.student.id; // req.student set by JWT middleware
+
+  try {
+    const student = await Student.findById(studentId).populate('library');
+    res.json(student.library);
+  } catch (err) {
+    console.error('Get Library Error:', err);
     res.status(500).send('Server error');
   }
 };

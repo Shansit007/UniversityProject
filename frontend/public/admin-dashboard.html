@@ -129,16 +129,28 @@
     }
 
     async function approveFaculty(id, btn) {
-      btn.disabled = true;
-      const res = await fetch(`${backend}/api/admin/approve/faculty/${id}`, { method: "PUT" });
-      if (res.ok) {
-        alert("Faculty approved!");
-        fetchPendingFaculty();
-      } else {
-        alert("Error approving faculty");
-        btn.disabled = false;
-      }
+  btn.disabled = true;
+  const adminToken = localStorage.getItem('adminToken'); // fetch token from storage
+
+  const res = await fetch(`${backend}/api/admin/approve/faculty/${id}`, {
+    method: "PUT",
+    headers: {
+      'Authorization': `Bearer ${adminToken}`,
+      'Content-Type': 'application/json'
     }
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    alert("Faculty approved!");
+    fetchPendingFaculty();
+  } else {
+    alert(data.msg || "Error approving faculty");
+    btn.disabled = false;
+  }
+}
+
 
     async function rejectFaculty(id, btn) {
       btn.disabled = true;

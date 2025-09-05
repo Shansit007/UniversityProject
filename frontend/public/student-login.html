@@ -40,34 +40,44 @@
   </div>
 
 <script>
-  document.getElementById('studentLoginForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+document.getElementById('studentLoginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
 
-    const identifier = document.getElementById('studentIdentifier').value.trim();
-    const password = document.getElementById('studentPassword').value.trim();
+  const identifier = document.getElementById('studentIdentifier').value.trim();
+  const password = document.getElementById('studentPassword').value.trim();
 
-    try {
-      const res = await fetch('http://localhost:5000/api/student/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regNo: id, password })
-      });
+  if (!identifier || !password) {
+    alert('Please enter your registration number / name / email and password.');
+    return;
+  }
 
-      const data = await res.json();
-      if (res.ok) {
-        alert('✅ Login successful!');
-        console.log(data);
+  try {
+    const res = await fetch('http://localhost:5000/api/student/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }) // sending identifier to backend
+    });
 
-        // you can redirect student to dashboard after login
-        window.location.href = '/student-dashboard.html';
-      } else {
-        alert('❌ ' + data.msg);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('⚠️ Server error. Please try again later.');
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('✅ Login successful!');
+      console.log('Student data:', data);
+
+      // Store JWT in localStorage for future API calls
+      if(data.token) localStorage.setItem('studentToken', data.token);
+      localStorage.setItem('studentData', JSON.stringify(data.student));
+
+      // Redirect to dashboard
+      window.location.href = '/student-dashboard.html';
+    } else {
+      alert('❌ ' + data.msg);
     }
-  });
+  } catch (err) {
+    console.error(err);
+    alert('⚠️ Server error. Please try again later.');
+  }
+});
 </script>
 
 </body>

@@ -15,6 +15,25 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+const path = require("path");
+
+// serve static files
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+
+// optional: serve index.html at root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
+
+// route for faculty dashboard
+app.get("/faculty-dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/faculty-dashboard.html"));
+});
+
+
+
+
+
 // Mount routes
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/admin', adminRoutes);

@@ -6,7 +6,8 @@ const clubSchema = new mongoose.Schema({
   presidentName: { type: String, required: true },
   password: { type: String, required: true },
   otpVerified: { type: Boolean, default: false },
-  approved: { type: Boolean, default: false }
+  approved: { type: Boolean, default: false },
+  events: [{ name: String, date: Date }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Club', clubSchema);

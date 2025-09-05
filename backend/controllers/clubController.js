@@ -79,3 +79,25 @@ exports.approveClub = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+// Get all approved clubs
+exports.getAllClubs = async (req, res) => {
+  try {
+    const clubs = await Club.find({ approved: true });
+    res.json(clubs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Get events of a club
+exports.getClubEvents = async (req, res) => {
+  try {
+    const club = await Club.findById(req.params.id).populate('events'); // add events array in schema
+    res.json(club.events || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};

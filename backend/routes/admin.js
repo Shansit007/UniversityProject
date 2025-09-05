@@ -16,20 +16,23 @@ router.get('/pending', async (req, res) => {
 });
 
 // ✅ Approve a faculty
-router.put('/approve/faculty/:facultyID', async (req, res) => {
+router.put('/approve/faculty/:id', async (req, res) => {
   try {
-    const faculty = await Faculty.findOneAndUpdate(
-      { facultyID: req.params.facultyID },
+    const faculty = await Faculty.findByIdAndUpdate(
+      req.params.id,
       { approved: true },
       { new: true }
     );
+
     if (!faculty) return res.status(404).json({ msg: 'Faculty not found' });
+
     res.json({ msg: 'Faculty approved successfully', faculty });
   } catch (err) {
-    console.error(err);
+    console.error('Error approving faculty:', err);
     res.status(500).send('Server error');
   }
 });
+
 
 // ✅ Approve a club
 router.put('/approve/club/:clubName', async (req, res) => {

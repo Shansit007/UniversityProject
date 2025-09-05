@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Student Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <div class="container mx-auto p-4">
+
+    <!-- Faculty Search -->
+    <div class="mb-6">
+      <input type="text" id="facultySearch" placeholder="Search faculty by name..."
+        class="border p-2 rounded w-full">
+    </div>
+
+    <!-- Faculties List -->
+    <div id="facultyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
+
+    <!-- Clubs Section -->
+    <h2 class="text-2xl font-bold mb-4">Clubs</h2>
+    <div id="clubList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+  </div>
+
+<script>
+const studentToken = localStorage.getItem('studentToken'); // JWT from login
+const studentData = JSON.parse(localStorage.getItem('studentData'));
+
+console.log("Student JWT token:", studentToken); // 🔎 check if token exists
+
+  if (!studentToken) {
+    alert('You are not logged in. Please login first.');
+    window.location.href = '/student-login.html';
+  }
+
+// --- Fetch Faculties ---
+async function fetchFaculties() {
+  try {
+    const res = await fetch('http://localhost:5000/api/faculty', {
+      headers: { 'Authorization': `Bearer ${studentToken}` }
+    });
+    const data = await res.json();
+    displayFaculties(data);
+  } catch (err) {
+    console.error('Error fetching faculties:', err);
+  }
+}
+
+// Display faculties in cards
+function displayFaculties(faculties) {
+  const container = document.getElementById('facultyList');
+  container.innerHTML = '';
+
+  faculties.forEach(fac => {
+    const card = document.createElement('div');
+    card.className = 'bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer';
+
+    card.innerHTML = `
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-lg">${fac.name}</h3>
+        <button class="bg-blue-500 text-white px-3 py-1 rounded-full font-bold" onclick="addToLibrary('${fac._id}', event)">+</button>
+      </div>
+      <div class="facultyDetails hidden mt-2 text-sm text-gray-700">
+        <p><strong>Email:</strong> ${fac.email}</p>
+        <p><strong>Cabin:</strong> ${fac.cabin || 'N/A'}</p>
+        <p><strong>Free Slots:</strong> ${fac.freeSlots || 'N/A'}</p>
+        <p><strong>Note:</strong> ${fac.note || 'No note'}</p>
+      </div>
+    `;
+
+    // Expand card on click (except '+' button)
+    card.addEventListener('click', (e) => {
+      if(e.target.tagName !== 'BUTTON') {
+        const details = card.querySelector('.facultyDetails');
+        details.classList.toggle('hidden');
+      }
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// Add faculty to library
+async function addToLibrary(facultyId, event) {
+  event.stopPropagation(); // prevent card toggle
+  try {
+    const res = await fetch('http://localhost:5000/api/student/add-to-library', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${studentToken}`
+      },
+      body: JSON.stringify({ studentId: studentData._id, facultyId })
+    });
+    const data = await res.json();
+    alert(data.msg);
+  } catch (err) {
+    console.error(err);
+    alert('Error adding to library.');
+  }
+}
+
+// Faculty search filter
+document.getElementById('facultySearch').addEventListener('input', async (e) => {
+  const search = e.target.value.toLowerCase();
+  try {
+    const res = await fetch('http://localhost:5000/api/faculty', {
+      headers: { 'Authorization': `Bearer ${studentToken}` }
+    });
+    const data = await res.json();
+    const filtered = data.filter(f => f.name.toLowerCase().includes(search));
+    displayFaculties(filtered);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+// --- Fetch Clubs ---
+async function fetchClubs() {
+  try {
+    const res = await fetch('http://localhost:5000/api/club/all', {
+      headers: { 'Authorization': `Bearer ${studentToken}` }
+    });
+    const data = await res.json();
+    displayClubs(data);
+  } catch (err) {
+    console.error('Error fetching clubs:', err);
+  }
+}
+
+// Display clubs in cards
+function displayClubs(clubs) {
+  const container = document.getElementById('clubList');
+  container.innerHTML = '';
+
+  clubs.forEach(club => {
+    const card = document.createElement('div');
+    card.className = 'bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer';
+    
+    card.innerHTML = `
+      <h3 class="font-bold text-lg">${club.clubName}</h3>
+      <div class="clubEvents hidden mt-2 text-sm text-gray-700">
+        ${club.events.length > 0 ? club.events.map(ev => `<p>${ev.name} - ${new Date(ev.date).toLocaleDateString()}</p>`).join('') : '<p>No upcoming events</p>'}
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      const events = card.querySelector('.clubEvents');
+      events.classList.toggle('hidden');
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// Initial fetch
+fetchFaculties();
+fetchClubs();
+</script>
+
+</body>
+</html>

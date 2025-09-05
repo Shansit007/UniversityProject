@@ -40,33 +40,37 @@
   </div>
 
 <script>
-  document.getElementById('facultyLoginForm').addEventListener('submit', async function(e){
+  document.getElementById('facultyLoginForm').addEventListener('submit', async e => {
     e.preventDefault();
 
-    const facultyID = document.getElementById('facultyIdentifier').value.trim();
-    const password = document.getElementById('facultyPassword').value;
+    const facultyID = document.getElementById('facultyIdentifier').value; // ✅ correct ID
+    const password = document.getElementById('facultyPassword').value;    // ✅ correct ID
 
     try {
-      const res = await fetch('http://localhost:5000/api/faculty/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ facultyID, password })
+      const res = await fetch("http://localhost:5000/api/faculty/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facultyID, password }) // ✅ now facultyID is correct
       });
 
-      const result = await res.json();
-      if (res.ok) {
-        alert('Login successful!');
-        console.log('Faculty:', result.faculty);
-        // you can store token in localStorage here later
+      const data = await res.json();
+      console.log("FULL login response:", data);
+
+      if (res.ok && data.success) {
+        localStorage.setItem("facultyToken", data.token);
+        alert("✅ Redirecting to dashboard...");
+        window.location.href = "/faculty-dashboard";  
       } else {
-        alert(result.msg || 'Login failed');
+        alert("❌ " + (data.msg || "Login failed"));
       }
     } catch (err) {
-      console.error(err);
-      alert('Server error');
+      console.error("⚠️ Server error:", err);
+      alert("⚠️ Server error. Try again.");
     }
   });
 </script>
+
+
 
 </body>
 </html>

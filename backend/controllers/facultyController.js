@@ -1,7 +1,10 @@
 const Faculty = require('../models/Faculty');
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 
+// ============================
 // Register Faculty
+// ============================
 exports.registerFaculty = async (req, res) => {
   const { name, mobile, email, facultyID, password } = req.body;
 
@@ -24,40 +27,152 @@ exports.registerFaculty = async (req, res) => {
 
     res.json({ msg: 'Faculty registered. OTP verified. Await admin approval.' });
   } catch (err) {
-    console.error(err);
+    console.error("Register error:", err);
     res.status(500).send('Server error');
   }
 };
 
+// ============================
 // Login Faculty
+// ============================
 exports.loginFaculty = async (req, res) => {
-  const { identifier, password } = req.body; // identifier = name or facultyID
-
-console.log('req.body:', req.body);
-console.log('typeof password:', typeof password);
-console.log('password:', `"${password}"`); // quotes help see spaces
-
-
   try {
-    const faculty = await Faculty.findOne({ $or: [{ name: identifier }, { facultyID: identifier }] });
-    if (!faculty) {
-      console.log('Faculty not found');
-      return res.status(400).json({ msg: 'Faculty not found' });
+    console.log("req.body:", req.body);
+
+    const { facultyID, password } = req.body;
+
+    if (!facultyID || !password) {
+      return res.status(400).json({ msg: "FacultyID and password are required" });
     }
 
-    console.log('Faculty found:', faculty);
+    // Look up faculty by facultyID only
+    const faculty = await Faculty.findOne({ facultyID: facultyID.trim() });
 
-    if (!faculty.otpVerified) return res.status(400).json({ msg: 'OTP not verified' });
-    if (!faculty.approved) return res.status(400).json({ msg: 'Awaiting admin approval' });
+    if (!faculty) {
+      console.log("Faculty not found with ID:", facultyID);
+      return res.status(400).json({ msg: "Faculty not found" });
+    }
 
+    // Check OTP + approval
+    if (!faculty.otpVerified) {
+      return res.status(400).json({ msg: "OTP not verified" });
+    }
+    if (!faculty.approved) {
+      return res.status(400).json({ msg: "Awaiting admin approval" });
+    }
+
+    // Compare password
     const isMatch = await bcrypt.compare(password, faculty.password);
-    console.log('Password match result:', isMatch);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Invalid password" });
+    }
 
-    if (!isMatch) return res.status(400).json({ msg: 'Invalid password' });
+    // Generate token
+    const token = jwt.sign(
+      { facultyId: faculty._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    res.json({ msg: 'Login successful', faculty });
+    // Send response with token + faculty
+    res.status(200).json({
+      success: true,
+      msg: "Login successful",
+      token: token,
+      faculty: faculty
+    });
+
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+// ============================
+// Search faculties by name
+// ============================
+exports.searchFaculty = async (req, res) => {
+  const name = req.query.name;
+  try {
+    const faculties = await Faculty.find({ name: { $regex: name, $options: 'i' }, approved: true });
+    res.json(faculties);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).send('Server error');
+  }
+};
+
+// ============================
+// Get all faculties
+// ============================
+exports.getAllFaculties = async (req, res) => {
+  try {
+    const faculties = await Faculty.find();
+    res.json(faculties);
+  } catch (err) {
+    console.error("Get all faculties error:", err);
+    res.status(500).send('Server error');
+  }
+};
+
+// ============================
+// Setup dashboard (first login)
+// ============================
+exports.setupDashboard = async (req, res) => {
+  const { cabin, freeSlots, note } = req.body;
+  try {
+    const faculty = await Faculty.findById(req.user.facultyId);
+    if (!faculty) {
+      return res.status(404).json({ msg: 'Faculty not found' });
+    }
+
+    faculty.cabin = cabin;
+    faculty.freeSlots = freeSlots;
+    faculty.note = note;
+    await faculty.save();
+
+    res.json({ msg: "Dashboard setup successful", faculty });
+  } catch (err) {
+    console.error("Setup dashboard error:", err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+// ============================
+// Update dashboard later
+// ============================
+exports.updateDashboard = async (req, res) => {
+  const { cabin, freeSlots, note } = req.body;
+  try {
+    const faculty = await Faculty.findById(req.user.facultyId);
+    if (!faculty) {
+      return res.status(404).json({ msg: "Faculty not found" });
+    }
+
+    if (cabin) faculty.cabin = cabin;
+    if (freeSlots) faculty.freeSlots = freeSlots;
+    if (note) faculty.note = note;
+    await faculty.save();
+
+    res.json({ msg: 'Dashboard updated', faculty });
+  } catch (err) {
+    console.error("Update dashboard error:", err);
+    res.status(500).send('Server error');
+  }
+};
+
+// ============================
+// Get dashboard data
+// ============================
+exports.getDashboard = async (req, res) => {
+  try {
+    const faculty = await Faculty.findById(req.user.facultyId);
+    if (!faculty) {
+      return res.status(404).json({ msg: "Faculty not found" });
+    }
+    res.json(faculty);
+  } catch (err) {
+    console.error("Get dashboard error:", err);
     res.status(500).send('Server error');
   }
 };
