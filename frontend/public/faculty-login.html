@@ -23,8 +23,8 @@
     <div class="box">
       <h1>Faculty Login</h1>
       <form id="facultyLoginForm">
-        <label for="facultyIdentifier">Name / Email / FacultyID</label>
-        <input id="facultyIdentifier" name="identifier" placeholder="e.g. FAC123 or your email">
+        <label for="facultyIdentifier">FacultyID</label>
+        <input id="facultyIdentifier" name="identifier" placeholder="e.g. FAC123">
 
         <label for="facultyPassword">Password</label>
         <input id="facultyPassword" name="password" type="password" placeholder="Password">
@@ -58,8 +58,8 @@
 
       if (res.ok && data.success) {
         localStorage.setItem("facultyToken", data.token);
-        alert("✅ Redirecting to dashboard...");
-        window.location.href = "/faculty-dashboard";  
+        
+        window.location.href = "/faculty-dashboard.html";  
       } else {
         alert("❌ " + (data.msg || "Login failed"));
       }

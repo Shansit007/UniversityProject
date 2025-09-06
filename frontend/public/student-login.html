@@ -61,7 +61,7 @@ document.getElementById('studentLoginForm').addEventListener('submit', async fun
     const data = await res.json();
 
     if (res.ok) {
-      alert('✅ Login successful!');
+      
       console.log('Student data:', data);
 
       // Store JWT in localStorage for future API calls

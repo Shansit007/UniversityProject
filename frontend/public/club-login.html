@@ -37,29 +37,27 @@
 document.getElementById('clubLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const identifier = document.getElementById('clubIdentifier').value.trim();
-const emailPattern = /\S+@\S+\.\S+/;
-const data = {
-  identifier: emailPattern.test(identifier) ? identifier.toLowerCase() : identifier,
-  password: document.getElementById('clubPassword').value
-};
+  const identifierInput = document.getElementById('clubIdentifier').value.trim();
+  const passwordInput = document.getElementById('clubPassword').value;
 
-  if (!identifier || !password) {
+  if (!identifierInput || !passwordInput) {
     alert('Please enter both Club Name/Email and Password');
     return;
   }
+
+  const emailPattern = /\S+@\S+\.\S+/;
+  const identifier = emailPattern.test(identifierInput) ? identifierInput.toLowerCase() : identifierInput;
 
   try {
     const res = await fetch('http://localhost:5000/api/club/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password })
+      body: JSON.stringify({ identifier, password: passwordInput })
     });
 
     const result = await res.json();
 
     if (res.ok) {
-      // Save token and club info
       localStorage.setItem('clubToken', result.token);
       localStorage.setItem('clubData', JSON.stringify(result.club));
       window.location.href = '/club-dashboard.html';
@@ -70,6 +68,7 @@ const data = {
     alert('Error: ' + err.message);
   }
 });
+
 </script>
 </body>
 </html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Faculty Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+    .switch input { display:none; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 9999px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #10b981; /* Tailwind green-500 */
+    }
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<!-- Navbar -->
+<nav class="bg-blue-600 p-4 text-white flex justify-between items-center shadow-md">
+  <h1 class="text-xl font-bold">Faculty Dashboard</h1>
+  <button id="logoutBtn" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition">Logout</button>
+</nav>
+
+<div class="container mx-auto p-6">
+
+  <h2 class="text-3xl font-bold mb-6 text-gray-800">Edit Your Availability</h2>
+
+  <div class="bg-white p-6 rounded-2xl shadow-md space-y-6">
+
+    <!-- Cabin -->
+    <div>
+      <label class="block font-semibold mb-1 text-gray-700">Cabin Number:</label>
+      <input type="text" id="cabin" class="border p-3 w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your cabin">
+    </div>
+
+    <!-- Free Slots -->
+    <div>
+      <label class="block font-semibold mb-3 text-gray-700">Your Free Slots:</label>
+      <div id="slots" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- Note -->
+    <div>
+      <label class="block font-semibold mb-1 text-gray-700">Special Note:</label>
+      <textarea id="note" class="border p-3 w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Eg: Not available on Thursdays"></textarea>
+    </div>
+
+    <button id="saveBtn" class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition w-full font-semibold text-lg">Save Changes</button>
+
+  </div>
+</div>
+
+<script>
+const facultyToken = localStorage.getItem('facultyToken');
+
+if (!facultyToken) {
+  alert('You are not logged in. Please login first.');
+  window.location.href = '/faculty-login.html';
+}
+
+// All possible slots
+const timeSlots = [
+  "8.30-10.00",
+  "10.00-11.40",
+  "11.40-1.15",
+  "1.15-2.50",
+  "2.50-4.20",
+  "4.20-6.00",
+  "6.00-7.30"
+];
+
+const slotsContainer = document.getElementById('slots');
+
+// Render toggles dynamically
+function renderToggles(selectedSlots = []) {
+  slotsContainer.innerHTML = '';
+  timeSlots.forEach(slot => {
+    const div = document.createElement('div');
+    div.className = "flex justify-between items-center bg-gray-50 p-3 rounded-xl shadow hover:shadow-md transition cursor-pointer";
+
+    const span = document.createElement('span');
+    span.innerText = slot;
+    span.className = "font-medium text-gray-700";
+
+    const label = document.createElement('label');
+    label.className = "switch";
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = slot;
+    input.className = 'slotToggle';
+    if (selectedSlots.includes(slot)) input.checked = true; // pre-select
+
+    const slider = document.createElement('span');
+    slider.className = 'slider';
+    label.appendChild(input);
+    label.appendChild(slider);
+
+    div.appendChild(span);
+    div.appendChild(label);
+    slotsContainer.appendChild(div);
+  });
+}
+
+// Load faculty profile
+async function loadFaculty() {
+  try {
+    const res = await fetch('http://localhost:5000/api/faculty/me', {
+      headers: { 'Authorization': `Bearer ${facultyToken}` }
+    });
+    if (!res.ok) throw new Error("Failed to load faculty profile");
+    const faculty = await res.json();
+
+    document.getElementById('cabin').value = faculty.cabin || '';
+    document.getElementById('note').value = faculty.note || '';
+
+    // render toggles with pre-selected slots
+    renderToggles(faculty.freeSlots || []);
+  } catch (err) {
+    console.error(err);
+    alert("⚠️ " + err.message);
+  }
+}
+
+// Save changes
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const cabin = document.getElementById('cabin').value;
+  const note = document.getElementById('note').value;
+  const freeSlots = Array.from(document.querySelectorAll('.slotToggle:checked')).map(t => t.value);
+
+  try {
+    const res = await fetch('http://localhost:5000/api/faculty/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${facultyToken}`
+      },
+      body: JSON.stringify({ cabin, freeSlots, note })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("✅ Profile updated successfully!");
+      loadFaculty(); // reload toggles with correct state
+    } else {
+      alert("❌ " + (data.msg || "Update failed"));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("⚠️ Server error. Try again.");
+  }
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('facultyToken');
+  window.location.href = '/faculty-login.html';
+});
+
+loadFaculty();
+</script>
+
+</body>
+</html>
