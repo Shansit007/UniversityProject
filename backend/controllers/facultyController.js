@@ -103,17 +103,21 @@ exports.searchFaculty = async (req, res) => {
 };
 
 // ============================
-// Get all faculties
+// Get all faculties (for students to view)
 // ============================
 exports.getAllFaculties = async (req, res) => {
   try {
-    const faculties = await Faculty.find();
+    const faculties = await Faculty.find(
+      { approved: true, otpVerified: true },
+      "-password" // exclude password field
+    );
     res.json(faculties);
   } catch (err) {
     console.error("Get all faculties error:", err);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
+
 
 // ============================
 // Setup dashboard (first login)
@@ -123,7 +127,7 @@ exports.setupDashboard = async (req, res) => {
   try {
     const faculty = await Faculty.findById(req.user.facultyId);
     if (!faculty) {
-      return res.status(404).json({ msg: 'Faculty not found' });
+      return res.status(404).json({ msg: "Faculty not found" });
     }
 
     faculty.cabin = cabin;
@@ -131,16 +135,17 @@ exports.setupDashboard = async (req, res) => {
     faculty.note = note;
     await faculty.save();
 
-    res.json({ msg: "Dashboard setup successful", faculty });
+    const safeFaculty = faculty.toObject();
+    delete safeFaculty.password;
+
+    res.json({ msg: "Dashboard setup successful", faculty: safeFaculty });
   } catch (err) {
     console.error("Setup dashboard error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
-// ============================
-// Update dashboard later
-// ============================
+
 exports.updateDashboard = async (req, res) => {
   const { cabin, freeSlots, note } = req.body;
   try {
@@ -149,30 +154,36 @@ exports.updateDashboard = async (req, res) => {
       return res.status(404).json({ msg: "Faculty not found" });
     }
 
-    if (cabin) faculty.cabin = cabin;
-    if (freeSlots) faculty.freeSlots = freeSlots;
-    if (note) faculty.note = note;
+    if (cabin !== undefined) faculty.cabin = cabin;
+    if (freeSlots !== undefined) faculty.freeSlots = freeSlots;
+    if (note !== undefined) faculty.note = note;
+
     await faculty.save();
 
-    res.json({ msg: 'Dashboard updated', faculty });
+    const safeFaculty = faculty.toObject();
+    delete safeFaculty.password;
+
+    res.json({ msg: "Dashboard updated", faculty: safeFaculty });
   } catch (err) {
     console.error("Update dashboard error:", err);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
+
 
 // ============================
 // Get dashboard data
 // ============================
 exports.getDashboard = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.user.facultyId);
+    const faculty = await Faculty.findById(req.user.facultyId).select("-password");
     if (!faculty) {
       return res.status(404).json({ msg: "Faculty not found" });
     }
     res.json(faculty);
   } catch (err) {
     console.error("Get dashboard error:", err);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
+

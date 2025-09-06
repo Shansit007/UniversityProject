@@ -146,6 +146,8 @@
         if (res.ok) {
           alert('✅ Dashboard setup complete!');
           console.log('Faculty data:', data);
+          // 👉 Redirect to profile page
+          window.location.href = '/faculty-profile.html';
         } else {
           alert('❌ ' + data.msg);
         }

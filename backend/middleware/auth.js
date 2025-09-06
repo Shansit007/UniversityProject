@@ -1,14 +1,16 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = function(req, res, next) {
-  const token = req.header('Authorization')?.split(' ')[1];
-  if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
+module.exports = function (req, res, next) {
+  const token = req.header('Authorization')?.split(' ')[1]; // expects "Bearer <token>"
+  if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.student = decoded;  // student id will be available in req.student.id
+    // 🔑 must match payload from loginStudent
+    req.user = { studentId: decoded.studentId };
     next();
   } catch (err) {
-    res.status(401).json({ msg: 'Token is not valid' });
+    console.error("Student auth error:", err);
+    res.status(401).json({ msg: "Token is not valid" });
   }
 };

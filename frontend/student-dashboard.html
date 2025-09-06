@@ -61,7 +61,7 @@ function displayFaculties(faculties) {
     card.innerHTML = `
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-lg">${fac.name}</h3>
-        <button class="bg-blue-500 text-white px-3 py-1 rounded-full font-bold" onclick="addToLibrary('${fac._id}', event)">+</button>
+
       </div>
       <div class="facultyDetails hidden mt-2 text-sm text-gray-700">
         <p><strong>Email:</strong> ${fac.email}</p>
@@ -83,25 +83,7 @@ function displayFaculties(faculties) {
   });
 }
 
-// Add faculty to library
-async function addToLibrary(facultyId, event) {
-  event.stopPropagation(); // prevent card toggle
-  try {
-    const res = await fetch('http://localhost:5000/api/student/add-to-library', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${studentToken}`
-      },
-      body: JSON.stringify({ studentId: studentData._id, facultyId })
-    });
-    const data = await res.json();
-    alert(data.msg);
-  } catch (err) {
-    console.error(err);
-    alert('Error adding to library.');
-  }
-}
+
 
 // Faculty search filter
 document.getElementById('facultySearch').addEventListener('input', async (e) => {

@@ -46,8 +46,8 @@ exports.loginStudent = async (req, res) => {
     const isMatch = await bcrypt.compare(password, student.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid password' });
 
-    // Sign JWT
-    const payload = { id: student._id };
+    // ✅ Sign JWT with studentId instead of id
+    const payload = { studentId: student._id };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     // Return student info + token
@@ -58,36 +58,11 @@ exports.loginStudent = async (req, res) => {
   }
 };
 
-// ------------------- ADD FACULTY TO LIBRARY -------------------
-exports.addToLibrary = async (req, res) => {
-  const { facultyId } = req.body;
-  const studentId = req.student.id; // req.student set by JWT middleware
 
-  try {
-    const student = await Student.findById(studentId);
-    if (!student.library) student.library = [];
 
-    if (!student.library.includes(facultyId)) {
-      student.library.push(facultyId);
-      await student.save();
-    }
+const Faculty = require('../models/Faculty');
 
-    res.json({ msg: 'Added to library' });
-  } catch (err) {
-    console.error('Add to Library Error:', err);
-    res.status(500).send('Server error');
-  }
-};
 
-// ------------------- GET STUDENT'S LIBRARY -------------------
-exports.getLibrary = async (req, res) => {
-  const studentId = req.student.id; // req.student set by JWT middleware
 
-  try {
-    const student = await Student.findById(studentId).populate('library');
-    res.json(student.library);
-  } catch (err) {
-    console.error('Get Library Error:', err);
-    res.status(500).send('Server error');
-  }
-};
+
+

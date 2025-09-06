@@ -1,22 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { registerFaculty, loginFaculty, getAllFaculties, setupDashboard, updateDashboard, getDashboard } = require('../controllers/facultyController');
+const { 
+  registerFaculty, 
+  loginFaculty, 
+  getAllFaculties, 
+  setupDashboard, 
+  updateDashboard, 
+  getDashboard 
+} = require('../controllers/facultyController');
 const facultyAuth = require('../middleware/facultyAuth'); // faculty JWT middleware
 
-// Public routes
+// ----------------- Public Routes -----------------
 router.post('/register', registerFaculty);
 router.post('/login', loginFaculty);
 
-// JWT-protected route to get all faculties
-router.get('/', facultyAuth, getAllFaculties);
+// Public: Students can fetch all approved + verified faculties
+router.get('/', getAllFaculties);
 
-// Setup dashboard (first login)
-router.post('/setup', facultyAuth, setupDashboard);
-
-// Update dashboard later
-router.put('/update', facultyAuth, updateDashboard);
-
-// Get dashboard data
-router.get('/me', facultyAuth, getDashboard);
+// ----------------- Protected Routes (Faculty only) -----------------
+router.post('/setup', facultyAuth, setupDashboard);   // first-time dashboard setup
+router.put('/update', facultyAuth, updateDashboard);  // update later
+router.get('/me', facultyAuth, getDashboard);         // faculty’s own data
 
 module.exports = router;
