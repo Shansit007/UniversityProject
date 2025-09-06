@@ -113,19 +113,32 @@ async function fetchClubs() {
   }
 }
 
-// Display clubs in cards
 function displayClubs(clubs) {
   const container = document.getElementById('clubList');
   container.innerHTML = '';
 
   clubs.forEach(club => {
+    const hasUpcomingEvents = club.events && club.events.length > 0;
+
     const card = document.createElement('div');
     card.className = 'bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer';
     
     card.innerHTML = `
+      ${hasUpcomingEvents ? '<span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>' : ''}
       <h3 class="font-bold text-lg">${club.clubName}</h3>
       <div class="clubEvents hidden mt-2 text-sm text-gray-700">
-        ${club.events.length > 0 ? club.events.map(ev => `<p>${ev.name} - ${new Date(ev.date).toLocaleDateString()}</p>`).join('') : '<p>No upcoming events</p>'}
+        ${
+          hasUpcomingEvents
+            ? club.events.map(ev => `
+                <p>
+                  ${ev.name} - ${new Date(ev.date).toLocaleDateString()} 
+                  <span class="${ev.odProvided ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'}">
+                    (${ev.odProvided ? '✅ OD Provided' : '❌ No OD'})
+                  </span>
+                </p>
+              `).join('')
+            : '<p>No upcoming events</p>'
+        }
       </div>
     `;
 
@@ -137,6 +150,8 @@ function displayClubs(clubs) {
     container.appendChild(card);
   });
 }
+
+
 
 // Initial fetch
 fetchFaculties();

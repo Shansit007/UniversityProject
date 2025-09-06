@@ -20,6 +20,8 @@ const path = require("path");
 // serve static files
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // optional: serve index.html at root
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));

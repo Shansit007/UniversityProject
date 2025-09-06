@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Club — Login</title>
   <link rel="stylesheet" href="/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
@@ -32,35 +33,43 @@
     </div>
   </div>
 
-  <script>
+<script>
 document.getElementById('clubLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const data = {
-    email: document.getElementById('clubEmail').value.trim(),
-    password: document.getElementById('clubPassword').value
-  };
+  const identifier = document.getElementById('clubIdentifier').value.trim();
+const emailPattern = /\S+@\S+\.\S+/;
+const data = {
+  identifier: emailPattern.test(identifier) ? identifier.toLowerCase() : identifier,
+  password: document.getElementById('clubPassword').value
+};
+
+  if (!identifier || !password) {
+    alert('Please enter both Club Name/Email and Password');
+    return;
+  }
 
   try {
     const res = await fetch('http://localhost:5000/api/club/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ identifier, password })
     });
 
     const result = await res.json();
+
     if (res.ok) {
-      alert('Login successful');
-      localStorage.setItem('club', JSON.stringify(result.club));
+      // Save token and club info
+      localStorage.setItem('clubToken', result.token);
+      localStorage.setItem('clubData', JSON.stringify(result.club));
       window.location.href = '/club-dashboard.html';
     } else {
-      alert(result.msg);
+      alert(result.msg || 'Login failed');
     }
   } catch (err) {
     alert('Error: ' + err.message);
   }
 });
-
-  </script>
+</script>
 </body>
 </html>

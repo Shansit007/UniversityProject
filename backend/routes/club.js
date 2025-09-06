@@ -1,26 +1,32 @@
-
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth'); // JWT middleware
-const { 
-  registerClub, 
-  loginClub, 
-  getPendingClubs, 
-  approveClub, 
-  getAllClubs, 
-  getClubEvents 
+const clubAuth = require('../middleware/clubAuth');
+const {
+  registerClub,
+  loginClub,
+  getPendingClubs,
+  approveClub,
+  getAllClubs,
+  getClubEvents,
+  getMyClub,
+  addEvent,
+  upload
 } = require('../controllers/clubController');
 
-// Public routes
+// Public
 router.post('/register', registerClub);
 router.post('/login', loginClub);
 
-// Admin-only routes
+// Admin-only
 router.get('/pending', getPendingClubs);
 router.put('/approve/:id', approveClub);
 
-// JWT-protected routes for student dashboard
-router.get('/all', auth, getAllClubs);         // Fetch all approved clubs
-router.get('/events/:id', auth, getClubEvents);
+// Public: used by student dashboard
+router.get('/all', getAllClubs);
+router.get('/events/:id', getClubEvents);
+
+// Protected club routes
+router.get('/me', clubAuth, getMyClub);
+router.post('/event', clubAuth, upload.single('poster'), addEvent);
 
 module.exports = router;

@@ -145,7 +145,7 @@ exports.setupDashboard = async (req, res) => {
   }
 };
 
-
+//updateDashboard
 exports.updateDashboard = async (req, res) => {
   const { cabin, freeSlots, note } = req.body;
   try {

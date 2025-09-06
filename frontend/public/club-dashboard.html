@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Club Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
+
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">
+      Welcome, Club Admin 🎉
+    </h1>
+
+    <!-- Add Event Form -->
+    <form id="eventForm" class="bg-white p-6 rounded-2xl shadow-lg space-y-4 max-w-lg mx-auto">
+      <h2 class="text-xl font-semibold text-gray-700">Add New Event</h2>
+
+      <input type="text" id="eventName" placeholder="Event Name"
+        class="border p-3 w-full rounded-lg focus:ring focus:ring-green-300">
+
+      <input type="date" id="eventDate"
+        class="border p-3 w-full rounded-lg focus:ring focus:ring-green-300">
+
+      <!-- File Input -->
+      <input type="file" id="eventFile" accept="image/*"
+        class="border p-3 w-full rounded-lg bg-gray-50">
+
+      <!-- OD Provided toggle -->
+      <div class="flex items-center justify-between">
+        <label for="odProvided" class="font-medium text-gray-700">OD Provided</label>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="odProvided" class="sr-only peer">
+          <div
+            class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 
+                   after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                   after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all 
+                   peer-checked:after:translate-x-full">
+          </div>
+        </label>
+      </div>
+
+      <button type="submit"
+        class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition">
+        ➕ Add Event
+      </button>
+    </form>
+
+    <!-- Event List -->
+    <h2 class="text-2xl font-bold mt-10 mb-6 text-gray-800">Upcoming Events</h2>
+    <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+<script>
+const clubToken = localStorage.getItem('clubToken'); // JWT from login
+
+if (!clubToken) {
+  alert('Not logged in. Please login first.');
+  window.location.href = '/club-login.html';
+}
+
+// Fetch and display events
+async function fetchEvents() {
+  try {
+    const res = await fetch('http://localhost:5000/api/club/me', {
+      headers: { 'Authorization': `Bearer ${clubToken}` }
+    });
+    const data = await res.json();
+
+    const container = document.getElementById('eventList');
+    container.innerHTML = '';
+    (data.events || []).forEach(ev => {
+      const card = document.createElement('div');
+      card.className =
+        'bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition';
+
+      card.innerHTML = `
+        <img src="${ev.poster || 'https://via.placeholder.com/400x200?text=No+Image'}"
+             alt="Event Poster" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold text-lg text-gray-800">${ev.name}</h3>
+          <p class="text-gray-600">${new Date(ev.date).toLocaleDateString()}</p>
+          <p class="mt-2 text-sm ${ev.odProvided ? 'text-green-600 font-semibold' : 'text-red-500'}">
+            ${ev.odProvided ? '✅ OD Provided' : '❌ No OD'}
+          </p>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch(err) {
+    console.error('Error fetching events:', err);
+  }
+}
+
+// Add new event
+document.getElementById('eventForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('eventName').value;
+  const date = document.getElementById('eventDate').value;
+  const file = document.getElementById('eventFile').files[0];
+  const odProvided = document.getElementById('odProvided').checked;
+
+  if (!name || !date) return alert('Event name and date required');
+
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('date', date);
+  formData.append('odProvided', odProvided);
+  if(file) formData.append('poster', file);
+
+  try {
+    const res = await fetch('http://localhost:5000/api/club/event', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${clubToken}` },
+      body: formData
+    });
+    const data = await res.json();
+    if(res.ok) {
+      alert('Event added successfully!');
+      fetchEvents();
+      document.getElementById('eventForm').reset();
+    } else {
+      alert(data.msg || 'Server error');
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Server error');
+  }
+});
+
+fetchEvents();
+</script>
+
+</body>
+</html>
