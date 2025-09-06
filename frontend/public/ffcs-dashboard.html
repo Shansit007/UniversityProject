@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Timetable — Dark Theme</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --bg:#060607;
+      --panel:#0f1114;
+      --muted:#9aa3b2;
+      --neon-1:#7cf2ff;   /* cyan */
+      --neon-2:#ff6ad5;   /* pink */
+      --neon-3:#7bff8a;   /* green */
+      --neon-4:#ffd86b;   /* yellow */
+      --warning:#ff4d4f;
+      --glass: rgba(255,255,255,0.03);
+    }
+
+    html,body{height:100%}
+    body{
+      background: linear-gradient(180deg,#202042 0%, #30303a 60%);
+      color: #e6eef8;
+      font-family: "Inter", "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding: 28px;
+    }
+
+    /* Container */
+    .app {
+      max-width:1100px;
+      margin: 0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+      min-height: calc(100vh - 56px);
+      animation: pageFade .4s ease;
+    }
+    @keyframes pageFade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+    /* Top controls */
+    .controls {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .left-controls { display:flex; gap:12px; align-items:center; flex:1; min-width:260px; }
+    .right-controls { display:flex; gap:8px; align-items:center; }
+
+    input.search {
+      min-width:220px;
+      max-width:560px;
+      width:36vw;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.06);
+      padding:10px 14px;
+      border-radius:999px;
+      color:var(--neon-1);
+      outline:none;
+      transition: box-shadow .18s, transform .15s;
+      box-shadow: 0 2px 18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+      font-weight:600;
+    }
+    input.search::placeholder{ color: #2c3740; color: rgba(255,255,255,0.25); font-weight:500; }
+
+    input.search:focus {
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6), 0 0 22px rgba(124,242,255,0.08);
+      transform: translateY(-1px);
+      border-color: rgba(124,242,255,0.25);
+    }
+
+    /* Buttons */
+    .btn {
+      padding:10px 14px;
+      border-radius: 999px;
+      border: 0;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 6px 18px rgba(61, 77, 110, 0.6);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: white;
+    }
+    .btn:active{ transform: translateY(1px) scale(.998) }
+
+    .btn.neon-blue { background: linear-gradient(90deg, rgba(124,242,255,0.14), rgba(90,130,255,0.12)); color: #d8faff; box-shadow: 0 8px 30px rgba(60,130,255,0.12); }
+    .btn.neon-green { background: linear-gradient(90deg, rgba(123,255,138,0.1), rgba(80,200,120,0.06)); color: #eaffef; }
+    .btn.warn { background: linear-gradient(90deg, rgba(255,80,80,0.08), rgba(255,40,40,0.04)); color: #fff3f3; }
+
+    /* Layout: table wrapper */
+    .table-wrap {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+      border-radius:14px;
+      padding:18px;
+      box-shadow: 0 10px 40px rgba(2,6,12,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Table style */
+    table.timetable {
+      width:100%;
+      border-collapse:collapse;
+      min-width:800px;
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    table.timetable thead th {
+      text-align:center;
+      padding:14px 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: #cfe8ff;
+      font-weight:700;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      position:relative;
+      letter-spacing:0.3px;
+    }
+
+    table.timetable tbody td {
+      padding:14px 12px;
+      text-align:center;
+      background: rgba(255,255,255,0.01);
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      color: rgba(255,255,255,0.92);
+      position:relative;
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease;
+      border-right: 1px solid rgba(255,255,255,0.01);
+      overflow:hidden;
+      max-width:120px;
+      white-space:nowrap;
+    }
+
+    table.timetable tbody td:first-child {
+      text-align:left;
+      font-weight:700;
+      padding-left:18px;
+      color:var(--neon-2);
+    }
+
+    table.timetable tbody tr:last-child td { border-bottom: none; }
+    table.timetable thead th:first-child { text-align:left; padding-left:18px; color:var(--neon-2) }
+
+    /* Default slot label small text */
+    .slot-code {
+      display:block;
+      font-weight:700;
+      font-size:14px;
+      color: rgba(255,255,255,0.92);
+    }
+    .slot-subject {
+      display:block;
+      font-weight:600;
+      font-size:12px;
+      margin-top:6px;
+      color: rgba(0,0,0,0.9);
+      padding:6px 8px;
+      border-radius:8px;
+      display:inline-block;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Hover on cell */
+    td.clickable:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.6), 0 0 18px rgba(255,255,255,0.02);
+      z-index:2;
+      cursor:pointer;
+    }
+
+    /* Highlight (search result) */
+    .highlight {
+      box-shadow: 0 8px 28px rgba(124,242,255,0.06), 0 0 28px rgba(124,242,255,0.06);
+      border-radius:10px;
+      animation: searchGlow 1s ease-in-out infinite alternate;
+    }
+    @keyframes searchGlow {
+      from { box-shadow: 0 6px 20px rgba(124,242,255,0.06), 0 0 8px rgba(124,242,255,0.02); transform: translateY(-2px); }
+      to   { box-shadow: 0 12px 38px rgba(124,242,255,0.12), 0 0 20px rgba(124,242,255,0.06); transform: translateY(-4px); }
+    }
+
+    /* Reserved slot styling - neon colors are applied inline as background + glow */
+    .reserved {
+      color: #060607;
+      font-weight:800;
+      text-shadow: none;
+      animation: reservedPulse 2s ease-in-out infinite;
+      position:relative;
+    }
+    @keyframes reservedPulse{
+      0% { box-shadow: 0 6px 20px rgba(0,0,0,0.4); transform: translateY(0); }
+      50% { box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 18px rgba(255,255,255,0.02); transform: translateY(-2px); }
+      100% { box-shadow: 0 6px 20px rgba(0,0,0,0.4); transform: translateY(0); }
+    }
+
+    /* Cross delete icon for reserved slot */
+    .slot-remove {
+      position:absolute;
+      top:6px;
+      right:6px;
+      width:24px;
+      height:24px;
+      border-radius:6px;
+      display:grid;
+      place-items:center;
+      font-size:14px;
+      color:rgba(0,0,0,0.8);
+      cursor:pointer;
+      transition: transform .12s, background .12s, opacity .12s;
+      opacity:0.95;
+      user-select:none;
+    }
+    .slot-remove:hover { transform: scale(1.06); opacity:1; }
+
+    /* Warning text */
+    .warning {
+      background: linear-gradient(90deg, rgba(255,77,77,0.08), rgba(255,20,20,0.03));
+      color: var(--warning);
+      padding:8px 12px;
+      border-radius:8px;
+      font-weight:700;
+      border: 1px solid rgba(255,77,77,0.12);
+      box-shadow: 0 8px 24px rgba(255,77,77,0.03);
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      z-index:60;
+      padding:18px;
+    }
+    .modal {
+      width:100%;
+      max-width:420px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:18px;
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.7);
+      transform: translateY(12px);
+      animation: modalIn .18s ease forwards;
+    }
+    @keyframes modalIn { to { transform:none; } }
+
+    /* Responsive */
+    @media (max-width:900px) {
+      input.search { width: 52vw; min-width:160px; }
+      .left-controls { flex-direction:column; align-items:flex-start; gap:8px; }
+    }
+    @media (max-width:720px){
+      .controls { gap:8px; }
+      table.timetable { min-width:680px; font-size:13px; }
+    }
+    @media (max-width:520px){
+      .app { padding:12px; gap:14px; }
+      table.timetable { min-width:640px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- Header -->
+    <div class="controls">
+      <div class="left-controls">
+        <div class="text-2xl font-bold neon" style="color:var(--neon-2)">Timetable</div>
+
+        <input id="searchInput" class="search" placeholder="Search slots like A11+A12+A13" aria-label="Search slots">
+      </div>
+
+      <div class="right-controls">
+        <button id="searchBtn" class="btn neon-blue">Search</button>
+        <button id="reserveBtn" class="btn neon-green">Reserve</button>
+        <button id="resetBtn" class="btn warn">Reset</button>
+      </div>
+    </div>
+
+    <!-- Warning / status -->
+    <div id="statusWrap" class="flex items-center justify-center">
+      <div id="warning" class="warning hidden"></div>
+    </div>
+
+    <!-- Timetable -->
+    <div class="table-wrap">
+      <div class="overflow-x-auto">
+        <table class="timetable" id="timetable">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Slot 1<br><span class="text-xs text-gray-400">08:30–10:00</span></th>
+              <th>Slot 2<br><span class="text-xs text-gray-400">10:05–11:35</span></th>
+              <th>Slot 3<br><span class="text-xs text-gray-400">11:40–13:10</span></th>
+              <th>Lunch</th>
+              <th>Slot 4<br><span class="text-xs text-gray-400">13:15–14:45</span></th>
+              <th>Slot 5<br><span class="text-xs text-gray-400">14:50–16:20</span></th>
+              <th>Slot 6<br><span class="text-xs text-gray-400">16:25–17:55</span></th>
+              <th>Slot 7<br><span class="text-xs text-gray-400">18:00–19:30</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr>
+              <td>Monday</td>
+              <td class="clickable" data-slot="A11"><span class="slot-code">A11</span></td>
+              <td class="clickable" data-slot="B11"><span class="slot-code">B11</span></td>
+              <td class="clickable" data-slot="C11"><span class="slot-code">C11</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="A21"><span class="slot-code">A21</span></td>
+              <td class="clickable" data-slot="A14"><span class="slot-code">A14</span></td>
+              <td class="clickable" data-slot="B21"><span class="slot-code">B21</span></td>
+              <td class="clickable" data-slot="C21"><span class="slot-code">C21</span></td>
+            </tr>
+
+            <tr>
+              <td>Tuesday</td>
+              <td class="clickable" data-slot="D11"><span class="slot-code">D11</span></td>
+              <td class="clickable" data-slot="E11"><span class="slot-code">E11</span></td>
+              <td class="clickable" data-slot="F11"><span class="slot-code">F11</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="D21"><span class="slot-code">D21</span></td>
+              <td class="clickable" data-slot="E14"><span class="slot-code">E14</span></td>
+              <td class="clickable" data-slot="E21"><span class="slot-code">E21</span></td>
+              <td class="clickable" data-slot="F21"><span class="slot-code">F21</span></td>
+            </tr>
+
+            <tr>
+              <td>Wednesday</td>
+              <td class="clickable" data-slot="A12"><span class="slot-code">A12</span></td>
+              <td class="clickable" data-slot="B12"><span class="slot-code">B12</span></td>
+              <td class="clickable" data-slot="C12"><span class="slot-code">C12</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="A22"><span class="slot-code">A22</span></td>
+              <td class="clickable" data-slot="B14"><span class="slot-code">B14</span></td>
+              <td class="clickable" data-slot="B22"><span class="slot-code">B22</span></td>
+              <td class="clickable" data-slot="A24"><span class="slot-code">A24</span></td>
+            </tr>
+
+            <tr>
+              <td>Thursday</td>
+              <td class="clickable" data-slot="D12"><span class="slot-code">D12</span></td>
+              <td class="clickable" data-slot="E12"><span class="slot-code">E12</span></td>
+              <td class="clickable" data-slot="F12"><span class="slot-code">F12</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="D22"><span class="slot-code">D22</span></td>
+              <td class="clickable" data-slot="F14"><span class="slot-code">F14</span></td>
+              <td class="clickable" data-slot="E22"><span class="slot-code">E22</span></td>
+              <td class="clickable" data-slot="F22"><span class="slot-code">F22</span></td>
+            </tr>
+
+            <tr>
+              <td>Friday</td>
+              <td class="clickable" data-slot="A13"><span class="slot-code">A13</span></td>
+              <td class="clickable" data-slot="B13"><span class="slot-code">B13</span></td>
+              <td class="clickable" data-slot="C13"><span class="slot-code">C13</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="A23"><span class="slot-code">A23</span></td>
+              <td class="clickable" data-slot="C14"><span class="slot-code">C14</span></td>
+              <td class="clickable" data-slot="B23"><span class="slot-code">B23</span></td>
+              <td class="clickable" data-slot="B24"><span class="slot-code">B24</span></td>
+            </tr>
+
+            <tr>
+              <td>Saturday</td>
+              <td class="clickable" data-slot="D13"><span class="slot-code">D13</span></td>
+              <td class="clickable" data-slot="E13"><span class="slot-code">E13</span></td>
+              <td class="clickable" data-slot="F13"><span class="slot-code">F13</span></td>
+              <td>Lunch</td>
+              <td class="clickable" data-slot="D23"><span class="slot-code">D23</span></td>
+              <td class="clickable" data-slot="D14"><span class="slot-code">D14</span></td>
+              <td class="clickable" data-slot="D24"><span class="slot-code">D24</span></td>
+              <td class="clickable" data-slot="E23"><span class="slot-code">E23</span></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="hidden modal-backdrop" aria-hidden="true">
+    <div class="modal">
+      <div class="mb-3 text-lg font-semibold" style="color:var(--neon-1)">Reserve slot(s)</div>
+      <div class="mb-4 text-sm text-gray-300">Enter the subject/name to register for the selected highlighted slot(s).</div>
+      <input id="subjectInput" type="text" placeholder="Subject name (e.g. Maths - Prof X)" class="w-full p-3 rounded-md mb-4" style="background:var(--glass); color:#fff; border:1px solid rgba(255,255,255,0.04)">
+      <div class="flex justify-end gap-2">
+        <button id="modalCancel" class="btn" style="background:transparent; border:1px solid rgba(255,255,255,0.03); color:#bfc8d6">Cancel</button>
+        <button id="modalConfirm" class="btn neon-green">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // JS logic for search/reserve/reset
+  (function(){
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const reserveBtn = document.getElementById('reserveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const warningEl = document.getElementById('warning');
+    const tbody = document.getElementById('tbody');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalCancel = document.getElementById('modalCancel');
+    const modalConfirm = document.getElementById('modalConfirm');
+    const subjectInput = document.getElementById('subjectInput');
+
+    // Data
+    const tdList = Array.from(document.querySelectorAll('td.clickable'));
+    const slotMap = {}; // slotCode -> td element
+    tdList.forEach(td => slotMap[ td.dataset.slot.trim().toUpperCase() ] = td);
+
+    // Reservation state: slotCode -> { subject, colorIndex }
+    const reserved = {};
+
+    // Neon color set (cycled)
+    const neonColors = [
+      { bg: 'linear-gradient(90deg,#7cf2ff,#00d1ff)', glow: '0 0 18px rgba(124,242,255,0.14)' }, // cyan
+      { bg: 'linear-gradient(90deg,#ff6ad5,#ff2ea8)', glow: '0 0 18px rgba(255,106,213,0.14)' }, // pink
+      { bg: 'linear-gradient(90deg,#7bff8a,#31d95d)', glow: '0 0 18px rgba(123,255,138,0.12)' }, // green
+      { bg: 'linear-gradient(90deg,#ffd86b,#ffc644)', glow: '0 0 18px rgba(255,216,107,0.12)' }  // yellow
+    ];
+    let nextColor = 0;
+
+    // Highlighted search results
+    let highlighted = [];
+
+    // Helpers
+    function clearHighlights(){
+      highlighted.forEach(td => td.classList.remove('highlight'));
+      highlighted = [];
+      hideWarning();
+    }
+    function showWarning(msg){
+      warningEl.textContent = msg;
+      warningEl.classList.remove('hidden');
+      warningEl.classList.add('inline-block');
+    }
+    function hideWarning(){
+      warningEl.textContent = '';
+      warningEl.classList.add('hidden');
+    }
+
+    function normalizeInput(str){
+      return str.split('+').map(s=>s.trim().toUpperCase()).filter(Boolean);
+    }
+
+    // Search action
+    searchBtn.addEventListener('click', () => {
+      clearHighlights();
+      const raw = searchInput.value || '';
+      const codes = normalizeInput(raw);
+      if(codes.length === 0) return;
+
+      let foundReserved = false;
+      codes.forEach(code => {
+        const td = slotMap[code];
+        if(td){
+          if(reserved[code]){
+            foundReserved = true;
+            // visually mark reserved conflict
+            td.classList.add('highlight');
+            td.style.boxShadow = '0 8px 30px rgba(255,77,77,0.12), 0 0 14px rgba(255,77,77,0.06)';
+          } else {
+            td.classList.add('highlight');
+            highlighted.push(td);
+          }
+        }
+      });
+
+      if(foundReserved){
+        showWarning('WARNING: Slot Reserved (one or more searched slots are already reserved)');
+      } else {
+        hideWarning();
+      }
+    });
+
+    // Reserve action
+    reserveBtn.addEventListener('click', () => {
+      if(highlighted.length === 0){
+        showWarning('Select slot(s) first (use Search).');
+        return;
+      }
+      // ensure none of highlighted are reserved
+      const anyReserved = highlighted.some(td => reserved[ td.dataset.slot ]);
+      if(anyReserved){
+        showWarning('Cannot reserve: one of the chosen slots is already reserved.');
+        return;
+      }
+      // open modal
+      subjectInput.value = '';
+      modalBackdrop.classList.remove('hidden');
+      modalBackdrop.setAttribute('aria-hidden','false');
+      subjectInput.focus();
+    });
+
+    modalCancel.addEventListener('click', () => {
+      modalBackdrop.classList.add('hidden');
+      modalBackdrop.setAttribute('aria-hidden','true');
+    });
+
+    // Confirm reservation
+    modalConfirm.addEventListener('click', () => {
+      const subject = (subjectInput.value || '').trim();
+      if(!subject) {
+        showWarning('Please enter a subject to reserve.');
+        return;
+      }
+
+      const colorObj = neonColors[nextColor % neonColors.length];
+      nextColor++;
+
+      highlighted.forEach(td => {
+        const code = td.dataset.slot;
+        // mark reserved state
+        reserved[code] = { subject, colorIndex: nextColor-1 };
+        // apply visual: background + text block + remove button
+        td.classList.add('reserved');
+        td.style.background = colorObj.bg;
+        td.style.color = '#040405';
+        td.style.borderRadius = '8px';
+        td.style.position = 'relative';
+        td.style.boxShadow = colorObj.glow + ', 0 8px 30px rgba(0,0,0,0.45)';
+
+        // content layout: show subject and keep original code small
+        td.innerHTML = `<span class="slot-code" style="color:rgba(0,0,0,0.65);font-weight:700">${code}</span>
+                        <span class="slot-subject" title="${subject}" style="background:rgba(255,255,255,0.92); color:#0a0a0a">${truncate(subject,26)}</span>`;
+
+        // add remove button
+        const remove = document.createElement('div');
+        remove.className = 'slot-remove';
+        remove.innerHTML = '✖';
+        remove.title = 'Remove reservation';
+        remove.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeReservation(code, td);
+        });
+        td.appendChild(remove);
+      });
+
+      // clear highlights + close modal
+      clearHighlights();
+      modalBackdrop.classList.add('hidden');
+      modalBackdrop.setAttribute('aria-hidden','true');
+      hideWarning();
+    });
+
+    // Reset => back to default table
+    resetBtn.addEventListener('click', () => {
+      // Clear reserved map and restore td innerHTML from data-slot
+      Object.keys(reserved).forEach(code => {
+        const td = slotMap[code];
+        if(td) restoreTD(td);
+      });
+      for(const k in reserved) delete reserved[k];
+      clearHighlights();
+      hideWarning();
+      searchInput.value = '';
+    });
+
+    // Click on a cell toggles highlight (optional nice UX)
+    tdList.forEach(td => {
+      td.addEventListener('click', () => {
+        // If reserved, show warning and highlight reservation briefly
+        const code = td.dataset.slot;
+        if(reserved[code]){
+          showWarning('WARNING: Slot Reserved');
+          td.classList.add('highlight');
+          td.style.boxShadow = '0 10px 40px rgba(255,77,77,0.12)';
+          setTimeout(()=> {
+            if(!highlighted.includes(td)) td.classList.remove('highlight');
+            hideWarning();
+          }, 1200);
+          return;
+        }
+
+        // toggle selection
+        if(td.classList.contains('highlight')){
+          td.classList.remove('highlight');
+          highlighted = highlighted.filter(x => x !== td);
+        } else {
+          td.classList.add('highlight');
+          highlighted.push(td);
+        }
+      });
+    });
+
+    // Remove reservation helper
+    function removeReservation(code, td){
+      delete reserved[code];
+      restoreTD(td);
+      hideWarning();
+    }
+
+    function restoreTD(td){
+      const code = td.dataset.slot;
+      td.classList.remove('reserved','highlight');
+      td.style.background = '';
+      td.style.color = '';
+      td.style.boxShadow = '';
+      td.style.borderRadius = '';
+      td.style.position = '';
+      td.innerHTML = `<span class="slot-code">${code}</span>`;
+    }
+
+    function truncate(s, n){
+      return s.length>n ? s.slice(0,n-1)+'…' : s;
+    }
+
+    // Keyboard: Enter triggers Search
+    searchInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') searchBtn.click();
+    });
+
+    // Clicking outside modal closes it (but keep confirm/cancel accessible)
+    modalBackdrop.addEventListener('click', (e) => {
+      if(e.target === modalBackdrop) {
+        modalBackdrop.classList.add('hidden');
+        modalBackdrop.setAttribute('aria-hidden','true');
+      }
+    });
+
+    // Initial small UI polish: focus input on load
+    setTimeout(()=> searchInput.focus(), 300);
+
+  })();
+</script>
+
+</body>
+</html>

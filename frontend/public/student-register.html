@@ -6,15 +6,93 @@
   <link rel="stylesheet" href="/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body{font-family:"Quicksand",Arial;margin:0;background:url('/img/bg.jpg') top center/cover no-repeat;min-height:100vh}
-    .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem}
-    .box{background:rgba(255,255,255,0.95); padding:2rem; border-radius:18px; width:520px; box-shadow:0 10px 30px rgba(0,0,0,.12)}
-    label{display:block; font-weight:600; margin-top:.65rem}
-    input{width:100%; padding:.65rem .8rem; margin-top:.35rem; border-radius:10px; border:1px solid #ddd}
-    .btn{background:#490307;color:#FFFED0;border:none;padding:.65rem 1rem;border-radius:999px;font-weight:700;cursor:pointer;margin-top:1rem}
-    .hint{font-size:.9rem;color:#666;margin-top:.6rem}
-  </style>
+  body {
+    font-family: "Quicksand", Arial, sans-serif;
+    margin: 0;
+    background: url('/img/bg.jpg') top center / cover no-repeat;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .box {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 18px;
+    width: 520px;
+    max-width: 95%;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    transition: all 0.3s ease;
+  }
+
+  /* Hover card effect */
+  .box:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 14px 38px rgba(0,0,0,.2);
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-top: .65rem;
+  }
+
+  input {
+    width: 100%;
+    padding: .65rem .8rem;
+    margin-top: .35rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    transition: border 0.3s, box-shadow 0.3s;
+  }
+
+  /* Input focus effect */
+  input:focus {
+    border-color: #490307;
+    outline: none;
+    box-shadow: 0 0 6px rgba(73, 3, 7, 0.4);
+  }
+
+  .btn {
+    background: #490307;
+    color: #FFFED0;
+    border: none;
+    padding: .65rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  /* Button hover effect */
+  .btn:hover {
+    background: #721010;
+    transform: scale(1.05);
+  }
+
+  .hint {
+    font-size: .9rem;
+    color: #666;
+    margin-top: .6rem;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 600px) {
+    .box {
+      width: 100%;
+      padding: 1.5rem;
+    }
+  }
+</style>
 </head>
+<body class="bg-cover bg-top" style="background-image: url('/img/bg.jpg')"></body>
 <body>
   <div class="wrap">
     <div class="box">

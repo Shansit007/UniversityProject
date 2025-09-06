@@ -6,35 +6,33 @@
   <title>Student Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-right bg-gray-100 font-sans min-h-screen" style="background-image: url('/img/bg.jpg'); background-size:cover; background-position:center;">
 
   <div class="container mx-auto p-4">
 
     <!-- Faculty Search -->
     <div class="mb-6">
       <input type="text" id="facultySearch" placeholder="Search faculty by name..."
-        class="border p-2 rounded w-full">
+        class="border p-2 rounded w-full shadow-sm focus:ring-2 focus:ring-blue-400 transition duration-200">
     </div>
 
     <!-- Faculties List -->
-    <div id="facultyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
+    <div id="facultyList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></div>
 
     <!-- Clubs Section -->
     <h2 class="text-2xl font-bold mb-4">Clubs</h2>
-    <div id="clubList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="clubList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
   </div>
 
 <script>
-const studentToken = localStorage.getItem('studentToken'); // JWT from login
+const studentToken = localStorage.getItem('studentToken'); 
 const studentData = JSON.parse(localStorage.getItem('studentData'));
 
-console.log("Student JWT token:", studentToken); // 🔎 check if token exists
-
-  if (!studentToken) {
-    alert('You are not logged in. Please login first.');
-    window.location.href = '/student-login.html';
-  }
+if (!studentToken) {
+  alert('You are not logged in. Please login first.');
+  window.location.href = '/student-login.html';
+}
 
 // --- Fetch Faculties ---
 async function fetchFaculties() {
@@ -56,12 +54,11 @@ function displayFaculties(faculties) {
 
   faculties.forEach(fac => {
     const card = document.createElement('div');
-    card.className = 'bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer';
+    card.className = 'bg-white p-4 rounded-xl shadow-md hover:shadow-2xl hover:scale-105 transform transition duration-300 cursor-pointer';
 
     card.innerHTML = `
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-lg">${fac.name}</h3>
-
       </div>
       <div class="facultyDetails hidden mt-2 text-sm text-gray-700">
         <p><strong>Email:</strong> ${fac.email}</p>
@@ -71,7 +68,6 @@ function displayFaculties(faculties) {
       </div>
     `;
 
-    // Expand card on click (except '+' button)
     card.addEventListener('click', (e) => {
       if(e.target.tagName !== 'BUTTON') {
         const details = card.querySelector('.facultyDetails');
@@ -82,8 +78,6 @@ function displayFaculties(faculties) {
     container.appendChild(card);
   });
 }
-
-
 
 // Faculty search filter
 document.getElementById('facultySearch').addEventListener('input', async (e) => {
@@ -121,7 +115,7 @@ function displayClubs(clubs) {
     const hasUpcomingEvents = club.events && club.events.length > 0;
 
     const card = document.createElement('div');
-    card.className = 'bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer';
+    card.className = 'bg-white p-4 rounded-xl shadow-md hover:shadow-2xl hover:scale-105 transform transition duration-300 cursor-pointer';
     
     card.innerHTML = `
       ${hasUpcomingEvents ? '<span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>' : ''}
@@ -150,8 +144,6 @@ function displayClubs(clubs) {
     container.appendChild(card);
   });
 }
-
-
 
 // Initial fetch
 fetchFaculties();
