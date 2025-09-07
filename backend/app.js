@@ -16,16 +16,16 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // Serve static files from 'frontend/public' directory
-app.use(express.static(path.join(__dirname, "/frontend", "/public")));
+app.use(express.static(path.join(__dirname, "frontend", "public")));
 
 // Route to serve index.html from 'frontend'
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/frontend", "/index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Fallback route for other paths (optional, depending on your frontend routing)
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "/frontend", "/index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Start server
