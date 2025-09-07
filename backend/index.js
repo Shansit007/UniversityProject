@@ -15,15 +15,17 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected to UniversityCluster"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Serve static files from the 'frontend' folder
-app.use(express.static(path.join(__dirname, "frontend")));
+// Serve static files from 'frontend/public' directory
+app.use(express.static(path.join(__dirname, "frontend", "public")));
 
-// API routes can be added here
-// Example: app.use("/api/faculty", facultyRoutes);
+// Route to serve index.html from 'frontend'
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+});
 
-// Fallback route — serve index.html for any unmatched route
+// Fallback route for other paths (optional, depending on your frontend routing)
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Start server
