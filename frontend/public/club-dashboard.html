@@ -64,7 +64,7 @@ if (!clubToken) {
 // Fetch and display events
 async function fetchEvents() {
   try {
-    const res = await fetch('http://localhost:5000/api/club/me', {
+    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/club/me', {
       headers: { 'Authorization': `Bearer ${clubToken}` }
     });
     const data = await res.json();
@@ -111,7 +111,7 @@ document.getElementById('eventForm').addEventListener('submit', async e => {
   if(file) formData.append('poster', file);
 
   try {
-    const res = await fetch('http://localhost:5000/api/club/event', {
+    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/club/event', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${clubToken}` },
       body: formData

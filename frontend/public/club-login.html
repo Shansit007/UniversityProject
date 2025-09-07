@@ -118,7 +118,7 @@ document.getElementById('clubLoginForm').addEventListener('submit', async (e) =>
   const identifier = emailPattern.test(identifierInput) ? identifierInput.toLowerCase() : identifierInput;
 
   try {
-    const res = await fetch('http://localhost:5000/api/club/login', {
+    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/club/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password: passwordInput })
