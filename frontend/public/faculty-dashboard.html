@@ -186,7 +186,7 @@ function renderToggles(selectedSlots = []) {
 // Load faculty profile
 async function loadFaculty() {
   try {
-    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/faculty/me', {
+    const res = await fetch('http://localhost:5000/api/faculty/me', {
       headers: { 'Authorization': `Bearer ${facultyToken}` }
     });
     if (!res.ok) throw new Error("Failed to load faculty profile");
@@ -210,7 +210,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const freeSlots = Array.from(document.querySelectorAll('.slotToggle:checked')).map(t => t.value);
 
   try {
-    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/faculty/update', {
+    const res = await fetch('http://localhost:5000/api/faculty/update', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

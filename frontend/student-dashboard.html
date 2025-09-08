@@ -37,7 +37,7 @@ if (!studentToken) {
 // --- Fetch Faculties ---
 async function fetchFaculties() {
   try {
-    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/faculty', {
+    const res = await fetch('http://localhost:5000/api/faculty', {
       headers: { 'Authorization': `Bearer ${studentToken}` }
     });
     const data = await res.json();
@@ -83,7 +83,7 @@ function displayFaculties(faculties) {
 document.getElementById('facultySearch').addEventListener('input', async (e) => {
   const search = e.target.value.toLowerCase();
   try {
-    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/faculty', {
+    const res = await fetch('http://localhost:5000/api/faculty', {
       headers: { 'Authorization': `Bearer ${studentToken}` }
     });
     const data = await res.json();
@@ -97,7 +97,7 @@ document.getElementById('facultySearch').addEventListener('input', async (e) => 
 // --- Fetch Clubs ---
 async function fetchClubs() {
   try {
-    const res = await fetch('https://where-is-my-faculty-backend.onrender.com/api/club/all', {
+    const res = await fetch('http://localhost:5000/api/club/all', {
       headers: { 'Authorization': `Bearer ${studentToken}` }
     });
     const data = await res.json();
