@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (studentBtn) {
     studentBtn.addEventListener("click", () => {
       console.log("Student login clicked");
-      window.open("/student-login.html", "_blank");   // served from public/
+      window.open("/student-dashboard.html", "_blank");   // served from public/
     });
   }
   if (facultyBtn) {
